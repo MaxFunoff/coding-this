@@ -1,5 +1,6 @@
 import { __prod__ } from "./constants";
 import { Post } from "./entities/Post";
+import { Comment } from "./entities/Comment";
 import { MikroORM } from '@mikro-orm/core'
 import path from 'path';
 
@@ -8,7 +9,7 @@ export default {
         path: path.join(__dirname, './migrations'),
         pattern: /^[\w-]+\d+\.[tj]s$/,
     },
-    entities: [Post],
+    entities: [Post, Comment],
     dbName: 'ct-db',
     user: 'maxfu',
     password: '1475963',

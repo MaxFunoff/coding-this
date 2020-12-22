@@ -21,7 +21,7 @@ export class PostResolver {
         return em.findOne(Post, { id })
     }
 
-
+    
     // Create new post
     @Mutation(() => Post)
     async createPost(
@@ -44,12 +44,25 @@ export class PostResolver {
     ): Promise<Post | null> {
         const post = await em.findOne(Post, { id })
         if (!post) return null
-        if(typeof title !== "undefined"){
+        if (typeof title !== "undefined") {
             post.title = title;
             post.description = description;
             await em.persistAndFlush(post)
         }
         return post
+    }
+
+    @Mutation(() => Boolean)
+    async deletePost(
+        @Arg('id') id: number,
+        @Ctx() { em }: MyContext
+    ): Promise<boolean> {
+        try {
+            await em.nativeDelete(Post, { id })
+            return true;
+        } catch (err) {
+            return false
+        }
     }
 
 }

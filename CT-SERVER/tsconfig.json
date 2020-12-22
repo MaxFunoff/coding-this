@@ -25,7 +25,10 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "typeRoots": [
+      "./typing-stubs"
+    ]
   },
   "exclude": [
     "node_modules"

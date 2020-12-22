@@ -31,10 +31,23 @@ let PostResolver = class PostResolver {
     post(id, { em }) {
         return em.findOne(Post_1.Post, { id });
     }
-    createPost(title, { em }) {
+    createPost(description, title, { em }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const post = em.create(Post_1.Post, { title });
+            const post = em.create(Post_1.Post, { title, description });
             yield em.persistAndFlush(post);
+            return post;
+        });
+    }
+    updatePost(id, description, title, { em }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const post = yield em.findOne(Post_1.Post, { id });
+            if (!post)
+                return null;
+            if (typeof title !== "undefined") {
+                post.title = title;
+                post.description = description;
+                yield em.persistAndFlush(post);
+            }
             return post;
         });
     }
@@ -56,12 +69,23 @@ __decorate([
 ], PostResolver.prototype, "post", null);
 __decorate([
     type_graphql_1.Mutation(() => Post_1.Post),
-    __param(0, type_graphql_1.Arg('title')),
-    __param(1, type_graphql_1.Ctx()),
+    __param(0, type_graphql_1.Arg('description')),
+    __param(1, type_graphql_1.Arg('title')),
+    __param(2, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], PostResolver.prototype, "createPost", null);
+__decorate([
+    type_graphql_1.Mutation(() => Post_1.Post, { nullable: true }),
+    __param(0, type_graphql_1.Arg('id')),
+    __param(1, type_graphql_1.Arg('description')),
+    __param(2, type_graphql_1.Arg('title')),
+    __param(3, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, String, String, Object]),
+    __metadata("design:returntype", Promise)
+], PostResolver.prototype, "updatePost", null);
 PostResolver = __decorate([
     type_graphql_1.Resolver()
 ], PostResolver);

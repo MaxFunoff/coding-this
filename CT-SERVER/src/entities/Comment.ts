@@ -3,13 +3,17 @@ import { Field, ObjectType } from "type-graphql";
 
 @ObjectType()
 @Entity()
-export class Post {
+export class Comment {
     @Field()
     @PrimaryKey()
     id!: number;
 
     @Field()
-    @Property({type:'number'})
+    @Property({type: 'number'})
+    postId!: number;
+
+    @Field()
+    @Property({type: 'number'})
     userId!: number;
 
     @Field(() => String)
@@ -22,9 +26,5 @@ export class Post {
 
     @Field()
     @Property({ type: 'text' })
-    title!: string;
-
-    @Field()
-    @Property({ type: 'text' })
-    description!: string;
+    content!: string;
 } 

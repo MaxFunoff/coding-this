@@ -7,9 +7,17 @@ import * as EmailValidator from 'email-validator';
 @InputType()
 class UsernamePasswordInput {
     @Field()
-    email: string
+    email: string;
     @Field()
-    password: string
+    password: string;
+}
+
+@InputType()
+class NewPasswordOldPasswordInput{
+    @Field()
+    oldPassword: string;
+    @Field()
+    newPassword: string;
 }
 
 
@@ -32,18 +40,20 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+
+
+    // Check if user logged in
     @Query(() => User, { nullable: true })
     async checkMe(
         @Ctx() { req,em }: MyContext
     ) {
-       if(!req.session.userId) {
-           return null
-       }
-
+       if(!req.session.userId)  return null
+       
        const user = await em.findOne(User, {id: req.session.userId})
        return user
     }
 
+    // Registere user
     @Mutation(() => UserResponse)
     async register(
         @Arg('options') options: UsernamePasswordInput,
@@ -100,6 +110,7 @@ export class UserResolver {
     }
 
 
+    // Login user
     @Mutation(() => UserResponse)
     async login(
         @Arg('options') options: UsernamePasswordInput,
@@ -130,6 +141,53 @@ export class UserResolver {
         }
 
         req.session.userId = user.id;
+        return {
+            user,
+        };
+    }
+
+    // Change password
+    @Mutation(() => UserResponse)
+    async changePassword(
+        @Arg('options') options: NewPasswordOldPasswordInput,
+        @Ctx() { em, req }: MyContext
+    ): Promise<UserResponse> {
+        if (!req.session.userId){
+            return{
+                errors:[
+                    {
+                        field: 'user',
+                        message: 'user not logged in'
+                    }
+                ]
+            }
+        }
+        
+        const user = await em.findOne(User, { id: req.session.userId })
+        if (!user) {
+            return {
+                errors: [
+                    {
+                        field: 'user',
+                        message: 'user not found'
+                    },
+                ],
+            }
+        }
+
+        const valid = await argon2.verify(user.password, options.oldPassword)
+        if (!valid) {
+            return {
+                errors: [
+                    {
+                        field: 'passowrd',
+                        message: 'incorrect password'
+                    },
+                ],
+            }
+        }
+        user.password = await argon2.hash(options.newPassword)
+        await em.persistAndFlush(user)
         return {
             user,
         };

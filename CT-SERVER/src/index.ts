@@ -14,6 +14,8 @@ import connectRedis from 'connect-redis';
 
 
 const main = async () => {
+    console.time('main')
+    
     const orm = await MikroORM.init(microConfig);
     await orm.getMigrator().up();
 
@@ -52,7 +54,9 @@ const main = async () => {
     apolloServer.applyMiddleware({ app })
 
     app.listen(4000, () => {
-        console.log('✅ Server started on http://localhost:4000/')
+        console.timeEnd('main')
+        console.log('✔️  Server started on port 4000')
+        console.log('⭐ Access GraphQL Debugger http://localhost:4000/GraphQL')
     });
 }
 

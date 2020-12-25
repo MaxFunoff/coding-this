@@ -13,7 +13,7 @@ class UsernamePasswordInput {
 }
 
 @InputType()
-class NewPasswordOldPasswordInput{
+class NewPasswordOldPasswordInput {
     @Field()
     oldPassword: string;
     @Field()
@@ -40,23 +40,22 @@ class UserResponse {
 @Resolver()
 export class UserResolver {
 
-
     // Check if user logged in
     @Query(() => User, { nullable: true })
     async checkMe(
-        @Ctx() { req,em }: MyContext
+        @Ctx() { req, em }: MyContext
     ) {
-       if(!req.session.userId)  return null
-       
-       const user = await em.findOne(User, {id: req.session.userId})
-       return user
+        if (!req.session.userId) return null
+
+        const user = await em.findOne(User, { id: req.session.userId })
+        return user
     }
 
-    // Registere user
+    // Register user
     @Mutation(() => UserResponse)
     async register(
         @Arg('options') options: UsernamePasswordInput,
-        @Ctx() { em }: MyContext
+        @Ctx() { req, em }: MyContext
     ): Promise<UserResponse> {
         const validEmail = EmailValidator.validate(options.email)
         if (!validEmail) {
@@ -64,7 +63,7 @@ export class UserResolver {
                 errors: [
                     {
                         field: 'email',
-                        message: 'email is not valid'
+                        message: 'Email is not valid'
                     }
                 ]
             }
@@ -75,7 +74,7 @@ export class UserResolver {
                 errors: [
                     {
                         field: 'password',
-                        message: 'password length must be greater then 4'
+                        message: 'Password length must be greater then 4'
                     },
                 ],
             }
@@ -89,14 +88,16 @@ export class UserResolver {
 
         try {
             await em.persistAndFlush(user)
+            req.session.userId = user.id;
+
         } catch (err) {
             if (err.code === '23505') {
-                // duplicate username error
+                // duplicate email error
                 return {
                     errors: [
                         {
                             field: 'email',
-                            message: 'email is already in use'
+                            message: 'Email is already in use'
                         },
                     ],
                 }
@@ -121,7 +122,7 @@ export class UserResolver {
                 errors: [
                     {
                         field: 'email',
-                        message: "email doesn't exist"
+                        message: "Email doesn't exist"
                     },
                 ],
             }
@@ -133,7 +134,7 @@ export class UserResolver {
                 errors: [
                     {
                         field: 'passowrd',
-                        message: 'incorrect password'
+                        message: 'Incorrect password'
                     },
                 ],
             }
@@ -151,24 +152,24 @@ export class UserResolver {
         @Arg('options') options: NewPasswordOldPasswordInput,
         @Ctx() { em, req }: MyContext
     ): Promise<UserResponse> {
-        if (!req.session.userId){
-            return{
-                errors:[
+        if (!req.session.userId) {
+            return {
+                errors: [
                     {
                         field: 'user',
-                        message: 'user not logged in'
+                        message: 'User is not logged in'
                     }
                 ]
             }
         }
-        
+
         const user = await em.findOne(User, { id: req.session.userId })
         if (!user) {
             return {
                 errors: [
                     {
                         field: 'user',
-                        message: 'user not found'
+                        message: 'User is not found'
                     },
                 ],
             }
@@ -180,7 +181,7 @@ export class UserResolver {
                 errors: [
                     {
                         field: 'passowrd',
-                        message: 'incorrect password'
+                        message: 'Incorrect password'
                     },
                 ],
             }

@@ -1,0 +1,5 @@
+query checkMe{
+  checkMe{
+    ...RegularUser
+  }
+}

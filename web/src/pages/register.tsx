@@ -61,8 +61,8 @@ const Register: FC<registerProps> = ({ }) => {
                 )}
             </Formik>
         </Wrapper>
-    );
-}
+    )
+};
 
 
 export default Register

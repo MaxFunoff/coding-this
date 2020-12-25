@@ -3,6 +3,7 @@ import { Resolver, Query, Ctx, Arg, Mutation, InputType, Field, ObjectType } fro
 import { User } from '../entities/User';
 import argon2 from 'argon2';
 import * as EmailValidator from 'email-validator';
+import { COOKIE_MAME } from '../constants';
 
 @InputType()
 class UsernamePasswordInput {
@@ -46,7 +47,6 @@ export class UserResolver {
         @Ctx() { req, em }: MyContext
     ) {
         if (!req.session.userId) return null
-
         const user = await em.findOne(User, { id: req.session.userId })
         return user
     }
@@ -139,12 +139,26 @@ export class UserResolver {
                 ],
             }
         }
-
         req.session.userId = user.id;
         return {
             user,
         };
     }
+
+    @Mutation(() => Boolean)
+    logout(@Ctx() { req, res }: MyContext) {
+        return new Promise(resolve =>
+            req.session.destroy(err => {
+                res.clearCookie(COOKIE_MAME)
+                if (err) {
+                    resolve(false)
+                    return
+                }
+
+                resolve(true)
+            }));
+    };
+
 
     // Change password
     @Mutation(() => UserResponse)

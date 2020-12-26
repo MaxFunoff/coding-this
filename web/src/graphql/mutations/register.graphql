@@ -1,5 +1,5 @@
-mutation Register($email: String!, $displayname: String!, $password: String!) {
-    register(options: { email: $email, displayname: $displayname, password: $password }) {
+mutation Register($options: EmailDisplaynamePasswordInput!) {
+    register(options: $options) {
       errors {
         ...UserError
       }
@@ -8,3 +8,4 @@ mutation Register($email: String!, $displayname: String!, $password: String!) {
       }
     }
   }
+  

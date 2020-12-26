@@ -1,5 +1,5 @@
 import * as EmailValidator from 'email-validator';
-import { EmailDisplaynamePasswordInput } from 'src/reslovers/EmailDisplaynamePasswordInput';
+import { EmailDisplaynamePasswordInput } from 'src/grql-types/input/EmailDisplaynamePasswordInput';
 
 export const validateRegister = (options: EmailDisplaynamePasswordInput) => {
     const validEmail = EmailValidator.validate(options.email)

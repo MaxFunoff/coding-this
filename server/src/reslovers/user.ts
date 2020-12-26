@@ -1,37 +1,14 @@
 import { MyContext } from 'src/types';
-import { Resolver, Query, Ctx, Arg, Mutation, InputType, Field, ObjectType } from 'type-graphql';
+import { Resolver, Query, Ctx, Arg, Mutation } from 'type-graphql';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
 import { COOKIE_MAME } from '../constants';
-import { EmailPasswordInput } from './EmailPasswordInput';
-import { EmailDisplaynamePasswordInput } from './EmailDisplaynamePasswordInput';
+import { EmailPasswordInput } from '../grql-types/input/EmailPasswordInput';
+import { EmailDisplaynamePasswordInput } from '../grql-types/input/EmailDisplaynamePasswordInput';
 import { validateRegister } from '../utils/validateRegister';
 import { registerError } from '../utils/registerError';
-
-@InputType()
-class NewPasswordOldPasswordInput {
-    @Field()
-    oldPassword: string;
-    @Field()
-    newPassword: string;
-}
-
-
-@ObjectType()
-class FieldError {
-    @Field()
-    field: string;
-    @Field()
-    message: string;
-}
-
-@ObjectType()
-class UserResponse {
-    @Field(() => [FieldError], { nullable: true })
-    errors?: FieldError[]
-    @Field(() => User, { nullable: true })
-    user?: User
-}
+import { NewPasswordOldPasswordInput } from '../grql-types/input/NewPasswordOldPasswordInput';
+import { UserResponse } from '../grql-types/object/UserResponse';
 
 @Resolver()
 export class UserResolver {

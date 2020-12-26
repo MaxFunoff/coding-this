@@ -2,16 +2,11 @@ import { MyContext } from 'src/types';
 import { Resolver, Query, Ctx, Arg, Mutation, InputType, Field, ObjectType } from 'type-graphql';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
-import * as EmailValidator from 'email-validator';
 import { COOKIE_MAME } from '../constants';
-
-@InputType()
-class UsernamePasswordInput {
-    @Field()
-    email: string;
-    @Field()
-    password: string;
-}
+import { EmailPasswordInput } from './EmailPasswordInput';
+import { EmailDisplaynamePasswordInput } from './EmailDisplaynamePasswordInput';
+import { validateRegister } from '../utils/validateRegister';
+import { registerError } from '../utils/registerError';
 
 @InputType()
 class NewPasswordOldPasswordInput {
@@ -51,38 +46,28 @@ export class UserResolver {
         return user
     }
 
+    // Forgot Password
+    @Mutation(() => Boolean)
+    async forgotPassword(
+        @Arg('email') email: string,
+        @Ctx() { em }: MyContext
+    ) {
+        const user = await em.findOne(User, { email });
+
+    }
     // Register user
     @Mutation(() => UserResponse)
     async register(
-        @Arg('options') options: UsernamePasswordInput,
+        @Arg('options') options: EmailDisplaynamePasswordInput,
         @Ctx() { req, em }: MyContext
     ): Promise<UserResponse> {
-        const validEmail = EmailValidator.validate(options.email)
-        if (!validEmail) {
-            return {
-                errors: [
-                    {
-                        field: 'email',
-                        message: 'Email is not valid'
-                    }
-                ]
-            }
-        }
-
-        if (options.password.length <= 5) {
-            return {
-                errors: [
-                    {
-                        field: 'password',
-                        message: 'Password length must be greater then 4'
-                    },
-                ],
-            }
-        }
+        const errors = validateRegister(options);
+        if (errors) return { errors }
 
         const hashedPassword = await argon2.hash(options.password)
         const user = em.create(User, {
             email: options.email,
+            displayname: options.displayname,
             password: hashedPassword
         })
 
@@ -91,19 +76,10 @@ export class UserResolver {
             req.session.userId = user.id;
 
         } catch (err) {
-            if (err.code === '23505') {
-                // duplicate email error
-                return {
-                    errors: [
-                        {
-                            field: 'email',
-                            message: 'Email is already in use'
-                        },
-                    ],
-                }
-            }
+            const errors = registerError(err)
+            if (errors) return { errors }
         }
-
+        
         return {
             user
         };
@@ -113,7 +89,7 @@ export class UserResolver {
     // Login user
     @Mutation(() => UserResponse)
     async login(
-        @Arg('options') options: UsernamePasswordInput,
+        @Arg('options') options: EmailPasswordInput,
         @Ctx() { em, req }: MyContext
     ): Promise<UserResponse> {
         const user = await em.findOne(User, { email: options.email })
@@ -133,7 +109,7 @@ export class UserResolver {
             return {
                 errors: [
                     {
-                        field: 'passowrd',
+                        field: 'password',
                         message: 'Incorrect password'
                     },
                 ],

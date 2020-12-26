@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { MikroORM } from '@mikro-orm/core';
-import { COOKIE_MAME, __prod__ } from './constants';
+import { COOKIE_MAME, SERVER_PORT, __prod__, __secret__ } from './constants';
 import microConfig from './mikro-orm.config'
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
@@ -12,10 +12,10 @@ import redis from 'redis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import cors from 'cors';
+import { sendEmail } from './utils/sendEmail';
 
 const main = async () => {
     console.time('main')
-
     const orm = await MikroORM.init(microConfig);
     await orm.getMigrator().up();
 
@@ -44,7 +44,7 @@ const main = async () => {
                 secure: __prod__ // cookie only works in https
             },
             saveUninitialized: false,
-            secret: 'maxrulesbrah',
+            secret: __secret__, // secret in constants
             resave: false,
         })
     );
@@ -62,10 +62,13 @@ const main = async () => {
         cors: false
     })
 
-    app.listen(4000, () => {
+    app.listen(SERVER_PORT, () => {
+        console.log('----------------')
         console.timeEnd('main')
-        console.log('✔️  Server started on port 4000')
-        console.log('⭐ Access GraphQL Debugger http://localhost:4000/GraphQL')
+        console.log('----------------')
+        console.log(`✔️  Server started on port ${SERVER_PORT}`)
+        console.log(`⭐ Access GraphQL Debugger http://localhost:${SERVER_PORT}/GraphQL`)
+        console.log('---------------------------------------------------------')
     });
 }
 

@@ -1,13 +1,14 @@
-import React, { FC } from "react";
-import { useRouter } from "next/router";
-import { toErrorMap } from "../utils/toErrorMap";
+import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
+import { withUrqlClient } from "next-urql";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
+import React, { FC } from "react";
+import { InputField } from "../components/InputField";
 import { Wrapper } from "../components/Wrapper";
 import { useLoginMutation } from "../generated/graphql";
-import { InputField } from "../components/InputField";
-import { Box, Button } from "@chakra-ui/react";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import { withUrqlClient } from "next-urql";
+import { toErrorMap } from "../utils/toErrorMap";
 
 interface loginProps {}
 
@@ -46,10 +47,16 @@ const Login: FC<loginProps> = ({}) => {
                 type="password"
               />
             </Box>
+            <Flex>
+              <NextLink href="/forgot-password">
+                <Link ml="auto">Forgot password?</Link>
+              </NextLink>
+            </Flex>
             <Button
-              mt={4}
               type="submit"
-              colorScheme="teal"
+              bg="blue.400"
+              colorScheme="blue"
+              color="white"
               isLoading={isSubmitting}
               loadingText="Logging in..."
             >

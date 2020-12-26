@@ -62,7 +62,9 @@ const Register: FC<registerProps> = ({}) => {
             <Button
               mt={4}
               type="submit"
-              colorScheme="teal"
+              bg="blue.400"
+              colorScheme="blue"
+              color="white"
               isLoading={isSubmitting}
               loadingText="Signing Up"
             >

@@ -12,6 +12,7 @@ import { UserResponse } from '../grql-types/object/UserResponse';
 import { sendEmail } from '../utils/sendEmail';
 import { v4 } from 'uuid';
 import { validatePassword } from '../utils/validatePassword';
+import { ResetPasswordEmail } from '../emails/ResetPasswordEmail'
 @Resolver()
 export class UserResolver {
 
@@ -28,14 +29,16 @@ export class UserResolver {
     // change password via email
     @Mutation(() => UserResponse)
     async changePassword(
-        @Arg('newPassword') newPassword: string,
+        @Arg('password') password: string,
         @Arg('token') token: string,
         @Ctx() { em, redis, req }: MyContext
     ): Promise<UserResponse> {
-        const errors = validatePassword(newPassword)
+        const errors = validatePassword(password)
         if (errors) return { errors }
 
-        const userId = await redis.get(FORGOT_PASSWORD_PREFIX + token)
+        const key = FORGOT_PASSWORD_PREFIX + token
+        const userId = await redis.get(key)
+
         if (!userId) {
             return {
                 errors: [
@@ -59,9 +62,11 @@ export class UserResolver {
             }
         }
 
-        user.password = await argon2.hash(newPassword)
+        user.password = await argon2.hash(password)
         await em.persistAndFlush(user)
 
+        // Remove token from redis
+        await redis.del(key)
         // Log in user after password change
         req.session.userId = user.id;
 
@@ -124,10 +129,9 @@ export class UserResolver {
         @Ctx() { em, redis }: MyContext
     ) {
         const user = await em.findOne(User, { email });
-        if (!user) {
-            // user doesnt exist
-            return true
-        }
+
+        // user doesnt exist
+        if (!user) return true
 
         const token = v4();
         await redis.set(
@@ -137,11 +141,11 @@ export class UserResolver {
             1000 * 60 * 60 * 3
         ); // 3 hours
 
-        sendEmail(email,
-            `<a href="http://localhost:3000/change-password/${token}">Reset Password</a>`
-        )
+        sendEmail(email, ResetPasswordEmail(user.displayname, token))
         return true
     }
+
+
     // Register user
     @Mutation(() => UserResponse)
     async register(

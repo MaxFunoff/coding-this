@@ -24,6 +24,6 @@ export class User {
     @Property({ type: 'text', unique: true })
     displayname!: string;
 
-    @Property({ type: 'text'})
+    @Property({ type: 'text' })
     password!: string;
 } 

@@ -6,7 +6,7 @@ import { Comment } from "./entities/Comment";
 import { User } from "./entities/User";
 
 export default {
-    migrations:{
+    migrations: {
         path: path.join(__dirname, './migrations'),
         pattern: /^[\w-]+\d+\.[tj]s$/,
     },

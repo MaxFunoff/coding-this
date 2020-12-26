@@ -44,11 +44,11 @@ export class CommentResolver {
         @Arg('content') content: string,
         @Ctx() { em }: MyContext
     ): Promise<Comment | null> {
-        
+
         /////////////////////////////////////////////////
         //Check if correct user tries to post a comment//
         /////////////////////////////////////////////////
-        const comment = em.create(Comment, {userId, postId, content})
+        const comment = em.create(Comment, { userId, postId, content })
         await em.persistAndFlush(comment)
 
         return comment
@@ -62,13 +62,13 @@ export class CommentResolver {
         @Arg('content') content: string,
         @Ctx() { em }: MyContext
     ): Promise<Comment | null> {
-        
+
         /////////////////////////////////////////////////
         //Check if correct user tries to edit a comment//
         /////////////////////////////////////////////////
         const comment = await em.findOne(Comment, { id })
         if (!comment) return null
-        if(typeof content !== "undefined"){
+        if (typeof content !== "undefined") {
             comment.content = content;
             await em.persistAndFlush(comment)
         }

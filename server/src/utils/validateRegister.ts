@@ -1,5 +1,6 @@
 import * as EmailValidator from 'email-validator';
 import { EmailDisplaynamePasswordInput } from 'src/grql-types/input/EmailDisplaynamePasswordInput';
+import { validatePassword } from './validatePassword';
 
 export const validateRegister = (options: EmailDisplaynamePasswordInput) => {
     const validEmail = EmailValidator.validate(options.email)
@@ -37,14 +38,8 @@ export const validateRegister = (options: EmailDisplaynamePasswordInput) => {
         ]
     }
 
-    if (options.password.length <= 5) {
-        return [
-            {
-                field: 'password',
-                message: 'Password length must be greater then 5'
-            },
-        ]
-    }
+    const pwErrors = validatePassword(options.password)
+    if (pwErrors) return pwErrors
 
     return null;
 }

@@ -9,7 +9,7 @@ export class Post {
     id!: number;
 
     @Field()
-    @Property({type:'number', nullable: true })
+    @Property({ type: 'number', nullable: true })
     userId!: number;
 
     @Field(() => String)
@@ -21,7 +21,7 @@ export class Post {
     updatedAt = new Date();
 
     @Field()
-    @Property({type: 'text'})
+    @Property({ type: 'text' })
     title!: string;
 
     @Field()

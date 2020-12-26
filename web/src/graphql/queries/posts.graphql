@@ -1,5 +1,5 @@
-query Posts{
-  posts{
+query Posts {
+  posts {
     id
     title
     description

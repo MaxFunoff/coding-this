@@ -8,11 +8,10 @@ import { buildSchema } from 'type-graphql';
 import { PostResolver } from './reslovers/post';
 import { CommentResolver } from './reslovers/comment';
 import { UserResolver } from './reslovers/user';
-import redis from 'redis';
+import Redis from 'ioredis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import cors from 'cors';
-import { sendEmail } from './utils/sendEmail';
 
 const main = async () => {
     console.time('main')
@@ -22,7 +21,8 @@ const main = async () => {
     const app = express();
 
     const RedisStore = connectRedis(session);
-    const redisClient = redis.createClient();
+    const redis = new Redis();
+
     app.use(
         cors({
             origin: 'http://localhost:3000',
@@ -34,7 +34,7 @@ const main = async () => {
         session({
             name: COOKIE_MAME,
             store: new RedisStore({
-                client: redisClient,
+                client: redis,
                 disableTouch: true,
             }),
             cookie: {
@@ -54,7 +54,7 @@ const main = async () => {
             resolvers: [PostResolver, CommentResolver, UserResolver],
             validate: false
         }),
-        context: ({ req, res }) => ({ em: orm.em, req, res })
+        context: ({ req, res }) => ({ em: orm.em, req, res, redis })
     });
 
     apolloServer.applyMiddleware({

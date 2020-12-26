@@ -21,7 +21,7 @@ export class PostResolver {
         return em.findOne(Post, { id })
     }
 
-    
+
     // Create new post
     @Mutation(() => Post)
     async createPost(

@@ -1,4 +1,0 @@
-fragment UserError on FieldError{
-    field
-    message
-}

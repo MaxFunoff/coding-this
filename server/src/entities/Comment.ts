@@ -9,11 +9,11 @@ export class Comment {
     id!: number;
 
     @Field()
-    @Property({type: 'number'})
+    @Property({ type: 'number' })
     postId!: number;
 
     @Field()
-    @Property({type: 'number'})
+    @Property({ type: 'number' })
     userId!: number;
 
     @Field(() => String)

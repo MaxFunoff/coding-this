@@ -2,8 +2,8 @@ import { WEB_DOMAIN } from "../constants"
 
 export const ResetPasswordEmail = (un: string, token: string) => {
 
-    return (
-        `
+  return (
+    `
         <style>
         .email-wrapper {
           padding: 10px;
@@ -52,7 +52,6 @@ export const ResetPasswordEmail = (un: string, token: string) => {
           Didn't ask for a new password? You can ignore this email.
         </h3>
       </div>
-      
         `
-    )
+  )
 }

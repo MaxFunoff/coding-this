@@ -27,7 +27,11 @@ const Login: FC<loginProps> = ({}) => {
             setErrors(toErrorMap(response.data.login.errors));
           } else if (response.data?.login.user) {
             // If success
-            router.push("/");
+            if (typeof router.query.next === "string") {
+              router.push(router.query.next)
+            } else {
+              router.push("/");
+            }
           }
         }}
       >
@@ -48,7 +52,7 @@ const Login: FC<loginProps> = ({}) => {
               />
             </Box>
             <Flex>
-              <NextLink href="/forgot-password">
+              <NextLink href="/forgot-password" passHref>
                 <Link ml="auto">Forgot password?</Link>
               </NextLink>
             </Flex>

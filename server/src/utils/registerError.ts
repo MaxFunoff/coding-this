@@ -1,24 +1,23 @@
 export const registerError = (err: any) => {
     // Duplicate Error code
     if (err.code === '23505') {
-        // Email duplicate
-        if (err.constraint === 'user_email_unique') {
+
+        // DisplayName duplicate
+        if (err.detail.includes('displayname')) {
+            return [
+                {
+                    field: 'displayname',
+                    message: 'Display Name is already in use'
+                },
+            ]
+        }        // Email duplicate
+        else if (err.detail.includes('email')) {
             return [
                 {
                     field: 'email',
                     message: 'Email is already in use'
                 },
             ]
-
-            // DisplayName duplicate
-        } else if (err.constraint === 'user_displayname_unique') {
-            return [
-                {
-                    field: 'displayname',
-                    message: 'DisplayName is already in use'
-                },
-            ]
-
         }
     }
 

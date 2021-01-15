@@ -1,7 +1,19 @@
-query Posts {
-  posts {
-    id
-    title
-    description
+query Posts($limit: Int!, $cursor: Int) {
+  posts(cursor: $cursor, limit: $limit) {
+    posts {
+      id
+      title
+      createdAt
+      updatedAt
+      descriptionSnippet {
+        snippet
+        hasMore
+      }
+      creator{
+        id
+        displayname
+      }
+    }
+    hasMore
   }
 }

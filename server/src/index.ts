@@ -1,22 +1,42 @@
-import 'reflect-metadata';
-import { MikroORM } from '@mikro-orm/core';
-import { COOKIE_MAME, SERVER_PORT, __prod__, __secret__ } from './constants';
-import microConfig from './mikro-orm.config'
-import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-import { buildSchema } from 'type-graphql';
-import { PostResolver } from './reslovers/post';
-import { CommentResolver } from './reslovers/comment';
-import { UserResolver } from './reslovers/user';
-import Redis from 'ioredis';
-import session from 'express-session';
 import connectRedis from 'connect-redis';
 import cors from 'cors';
+import express from 'express';
+import session from 'express-session';
+import Redis from 'ioredis';
+import 'reflect-metadata';
+import { buildSchema } from 'type-graphql';
+import { createConnection } from 'typeorm';
+import { COOKIE_MAME, SERVER_PORT, __prod__, __secret__ } from './constants';
+import { UserCommentResolver } from './reslovers/userComment';
+import { PostResolver } from './reslovers/post';
+import { UserResolver } from './reslovers/user';
+import path from 'path';
+import { Post } from './entities/Post';
+import { User } from './entities/User';
+import { UserComment } from './entities/UserComment';
 
 const main = async () => {
     console.time('main')
-    const orm = await MikroORM.init(microConfig);
-    await orm.getMigrator().up();
+
+    const conn = await createConnection({
+        type: 'postgres',
+        database: 'wtc2',
+        username: 'maxfu',
+        password: '1475963',
+        logging: true,
+        synchronize: true,
+        migrations: [path.join(__dirname, "./migrations/*")],
+        entities: [Post, User, UserComment]
+    })
+
+    // Run Migration
+    await conn.runMigrations();
+
+    // Delete shizz
+    // await Post.delete({}); // Deletes all Posts
+    // await User.delete({}); // Deletes all Users
+    // await UserComment.delete({}); // Deletes all Users Comments
 
     const app = express();
 
@@ -51,10 +71,10 @@ const main = async () => {
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [PostResolver, CommentResolver, UserResolver],
+            resolvers: [PostResolver, UserCommentResolver, UserResolver],
             validate: false
         }),
-        context: ({ req, res }) => ({ em: orm.em, req, res, redis })
+        context: ({ req, res }) => ({ req, res, redis })
     });
 
     apolloServer.applyMiddleware({

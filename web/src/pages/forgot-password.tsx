@@ -27,7 +27,7 @@ const ForgotPassword: FC = ({}) => {
                 Please check your email for instructions on how to reset your
                 password.
               </Box>
-              <NextLink href="/login">
+              <NextLink href="/login" passHref>
                 <Link color="blue.400">Go back to Login page</Link>
               </NextLink>
             </Box>

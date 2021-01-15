@@ -16,18 +16,13 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
-  posts: Array<Post>;
+  comments: Array<UserComment>;
+  commentsByPost: Array<UserComment>;
+  commentsByUser: Array<UserComment>;
+  comment: UserComment;
+  posts: PaginatedPosts;
   post?: Maybe<Post>;
-  comments: Array<Comment>;
-  commentsByPost: Array<Comment>;
-  commentsByUser: Array<Comment>;
-  comment: Array<Comment>;
   checkMe?: Maybe<User>;
-};
-
-
-export type QueryPostArgs = {
-  id: Scalars['Float'];
 };
 
 
@@ -45,66 +40,73 @@ export type QueryCommentArgs = {
   id: Scalars['Float'];
 };
 
+
+export type QueryPostsArgs = {
+  cursor?: Maybe<Scalars['Int']>;
+  limit: Scalars['Int'];
+};
+
+
+export type QueryPostArgs = {
+  id: Scalars['Float'];
+};
+
+export type UserComment = {
+  __typename?: 'UserComment';
+  id: Scalars['Float'];
+  content: Scalars['String'];
+  creatorId: Scalars['Float'];
+  createdAt: Scalars['String'];
+  updatedAt: Scalars['String'];
+};
+
+export type PaginatedPosts = {
+  __typename?: 'PaginatedPosts';
+  posts: Array<Post>;
+  hasMore: Scalars['Boolean'];
+};
+
 export type Post = {
   __typename?: 'Post';
   id: Scalars['Float'];
-  userId: Scalars['Float'];
-  createdAt: Scalars['String'];
-  updatedAt: Scalars['String'];
   title: Scalars['String'];
   description: Scalars['String'];
-};
-
-export type Comment = {
-  __typename?: 'Comment';
-  id: Scalars['Float'];
-  postId: Scalars['Float'];
-  userId: Scalars['Float'];
+  creatorId: Scalars['Float'];
+  creator: User;
+  likes: Scalars['Float'];
   createdAt: Scalars['String'];
   updatedAt: Scalars['String'];
-  content: Scalars['String'];
+  descriptionSnippet: DescriptionSnippet;
 };
 
 export type User = {
   __typename?: 'User';
   id: Scalars['Float'];
-  createdAt: Scalars['String'];
-  updatedAt: Scalars['String'];
   email: Scalars['String'];
   displayname: Scalars['String'];
+  createdAt: Scalars['String'];
+  updatedAt: Scalars['String'];
+};
+
+export type DescriptionSnippet = {
+  __typename?: 'descriptionSnippet';
+  snippet: Scalars['String'];
+  hasMore: Scalars['Boolean'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createComment: UserComment;
+  updateComment: UserComment;
   createPost: Post;
   updatePost?: Maybe<Post>;
   deletePost: Scalars['Boolean'];
-  createComment: Comment;
-  updateComment: Comment;
   changePassword: UserResponse;
   changePasswordAsUser: UserResponse;
   forgotPassword: Scalars['Boolean'];
   register: UserResponse;
   login: UserResponse;
   logout: Scalars['Boolean'];
-};
-
-
-export type MutationCreatePostArgs = {
-  title: Scalars['String'];
-  description: Scalars['String'];
-};
-
-
-export type MutationUpdatePostArgs = {
-  title: Scalars['String'];
-  description: Scalars['String'];
-  id: Scalars['Float'];
-};
-
-
-export type MutationDeletePostArgs = {
-  id: Scalars['Float'];
 };
 
 
@@ -118,6 +120,23 @@ export type MutationCreateCommentArgs = {
 export type MutationUpdateCommentArgs = {
   content: Scalars['String'];
   userId: Scalars['Float'];
+  id: Scalars['Float'];
+};
+
+
+export type MutationCreatePostArgs = {
+  input: PostInput;
+};
+
+
+export type MutationUpdatePostArgs = {
+  title: Scalars['String'];
+  description: Scalars['String'];
+  id: Scalars['Float'];
+};
+
+
+export type MutationDeletePostArgs = {
   id: Scalars['Float'];
 };
 
@@ -145,6 +164,11 @@ export type MutationRegisterArgs = {
 
 export type MutationLoginArgs = {
   options: EmailPasswordInput;
+};
+
+export type PostInput = {
+  description: Scalars['String'];
+  title: Scalars['String'];
 };
 
 export type UserResponse = {
@@ -210,6 +234,19 @@ export type ChangePasswordMutation = (
   ) }
 );
 
+export type CreatePostMutationVariables = Exact<{
+  input: PostInput;
+}>;
+
+
+export type CreatePostMutation = (
+  { __typename?: 'Mutation' }
+  & { createPost: (
+    { __typename?: 'Post' }
+    & Pick<Post, 'id' | 'title' | 'description' | 'creatorId' | 'likes' | 'createdAt' | 'updatedAt'>
+  ) }
+);
+
 export type ForgotPasswordMutationVariables = Exact<{
   email: Scalars['String'];
 }>;
@@ -265,15 +302,29 @@ export type CheckMeQuery = (
   )> }
 );
 
-export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+export type PostsQueryVariables = Exact<{
+  limit: Scalars['Int'];
+  cursor?: Maybe<Scalars['Int']>;
+}>;
 
 
 export type PostsQuery = (
   { __typename?: 'Query' }
-  & { posts: Array<(
-    { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'title' | 'description'>
-  )> }
+  & { posts: (
+    { __typename?: 'PaginatedPosts' }
+    & Pick<PaginatedPosts, 'hasMore'>
+    & { posts: Array<(
+      { __typename?: 'Post' }
+      & Pick<Post, 'id' | 'title' | 'createdAt' | 'updatedAt'>
+      & { descriptionSnippet: (
+        { __typename?: 'descriptionSnippet' }
+        & Pick<DescriptionSnippet, 'snippet' | 'hasMore'>
+      ), creator: (
+        { __typename?: 'User' }
+        & Pick<User, 'id' | 'displayname'>
+      ) }
+    )> }
+  ) }
 );
 
 export const RegularErrorFragmentDoc = gql`
@@ -310,6 +361,23 @@ export const ChangePasswordDocument = gql`
 
 export function useChangePasswordMutation() {
   return Urql.useMutation<ChangePasswordMutation, ChangePasswordMutationVariables>(ChangePasswordDocument);
+};
+export const CreatePostDocument = gql`
+    mutation CreatePost($input: PostInput!) {
+  createPost(input: $input) {
+    id
+    title
+    description
+    creatorId
+    likes
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+export function useCreatePostMutation() {
+  return Urql.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument);
 };
 export const ForgotPasswordDocument = gql`
     mutation ForgotPassword($email: String!) {
@@ -363,11 +431,23 @@ export function useCheckMeQuery(options: Omit<Urql.UseQueryArgs<CheckMeQueryVari
   return Urql.useQuery<CheckMeQuery>({ query: CheckMeDocument, ...options });
 };
 export const PostsDocument = gql`
-    query Posts {
-  posts {
-    id
-    title
-    description
+    query Posts($limit: Int!, $cursor: Int) {
+  posts(cursor: $cursor, limit: $limit) {
+    posts {
+      id
+      title
+      createdAt
+      updatedAt
+      descriptionSnippet {
+        snippet
+        hasMore
+      }
+      creator {
+        id
+        displayname
+      }
+    }
+    hasMore
   }
 }
     `;

@@ -1,11 +1,16 @@
 mutation CreatePost($input: PostInput!) {
   createPost(input: $input) {
-    id
-    title
-    description
-    creatorId
-    likes
-    createdAt
-    updatedAt
+    post {
+      id
+      title
+      description
+      creatorId
+      likes
+      createdAt
+      updatedAt
+    }
+    errors{
+      ...RegularError
+    }
   }
 }

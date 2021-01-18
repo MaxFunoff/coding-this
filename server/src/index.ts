@@ -6,7 +6,7 @@ import session from 'express-session';
 import Redis from 'ioredis';
 import 'reflect-metadata';
 import { buildSchema } from 'type-graphql';
-import { createConnection } from 'typeorm';
+import { createConnection, getConnection } from 'typeorm';
 import { COOKIE_MAME, SERVER_PORT, __prod__, __secret__ } from './constants';
 import { UserCommentResolver } from './reslovers/userComment';
 import { PostResolver } from './reslovers/post';
@@ -15,6 +15,7 @@ import path from 'path';
 import { Post } from './entities/Post';
 import { User } from './entities/User';
 import { UserComment } from './entities/UserComment';
+import { Upvote } from './entities/Upvote';
 
 const main = async () => {
     console.time('main')
@@ -27,7 +28,7 @@ const main = async () => {
         logging: true,
         synchronize: true,
         migrations: [path.join(__dirname, "./migrations/*")],
-        entities: [Post, User, UserComment]
+        entities: [Post, User, UserComment, Upvote]
     })
 
     // Run Migration
@@ -37,6 +38,15 @@ const main = async () => {
     // await Post.delete({}); // Deletes all Posts
     // await User.delete({}); // Deletes all Users
     // await UserComment.delete({}); // Deletes all Users Comments
+
+    // // Deletes all Users Upvotes 
+    // await Upvote.delete({}); 
+    // await getConnection()
+    //     .createQueryBuilder()
+    //     .update(Post)
+    //     .set({likes: 0})
+    //     .execute()
+    
 
     const app = express();
 

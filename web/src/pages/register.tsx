@@ -36,7 +36,7 @@ const Register: FC<registerProps> = ({}) => {
               name="displayname"
               label="Display Name"
               placeholder="Charlie"
-              required={true}
+              required
             />
 
             <Box mt={4}>
@@ -45,7 +45,7 @@ const Register: FC<registerProps> = ({}) => {
                 label="Email"
                 placeholder="Michael@email.com"
                 type="email"
-                required={true}
+                required
               />
             </Box>
 

@@ -9,4 +9,7 @@ export class PostInput {
 
     @Field()
     title: string;
+
+    @Field(()=> [String], {nullable: true})
+    tags: string[];
 }

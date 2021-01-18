@@ -3,7 +3,9 @@ import { createUrqlClient } from "../utils/createUrqlClient";
 import { usePostsQuery } from "../generated/graphql";
 import { Layout } from "../components/Layout";
 import React, { useEffect, useState } from "react";
-import { Box, Heading, Stack, Text } from "@chakra-ui/react";
+import { Box, Stack } from "@chakra-ui/react";
+import { PostCard } from "../components/PostCard";
+import { HeartIcon } from "../components/Icons/HeartIcon";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -17,7 +19,7 @@ const Index = () => {
   });
 
   const handleScroll = () => {
-    if (!data || data.posts.hasMore) return;
+    if (!data?.posts.hasMore) return;
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
       setVariables({
         ...variables,
@@ -31,7 +33,7 @@ const Index = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [data?.posts]);
+  }, [data]);
 
   // useEffect(() => {
   //   window.scrollTo(0, 0);
@@ -42,12 +44,9 @@ const Index = () => {
       {!fetching && !data ? (
         <div>Failed to load posts, try again later</div>
       ) : (
-        <Stack spacing={8}>
+        <Stack spacing="60px" width="50%" m="auto">
           {data?.posts.posts.map((post) => (
-            <Box key={post.id} p={5} shadow="md" borderWidth="1px">
-              <Heading fontSize="xl">{post.title}</Heading>
-              <Text mt={4}>{post.descriptionSnippet.snippet}</Text>
-            </Box>
+            <PostCard key={post.id} post={post} />
           ))}
         </Stack>
       )}

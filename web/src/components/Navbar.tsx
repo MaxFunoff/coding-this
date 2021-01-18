@@ -3,12 +3,12 @@ import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { useCheckMeQuery, useLogoutMutation } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 
 export const Navbar: FC<{}> = ({}) => {
+  const router = useRouter();
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
-  const [{ data, fetching }] = useCheckMeQuery({
-    pause: isServer(),
-  });
+  const [{ data }] = useCheckMeQuery();
   let side = null;
   let body = null;
   // data is loading
@@ -36,8 +36,9 @@ export const Navbar: FC<{}> = ({}) => {
           {data.checkMe.displayname}
         </Box>
         <Button
-          onClick={() => {
-            logout();
+          onClick={async () => {
+            await logout();
+            router.push('/')
           }}
           isLoading={logoutFetching}
           color="white"

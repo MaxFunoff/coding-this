@@ -10,9 +10,8 @@ import { useLoginMutation } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import { toErrorMap } from "../utils/toErrorMap";
 
-interface loginProps {}
 
-const Login: FC<loginProps> = ({}) => {
+const Login: FC = () => {
   const router = useRouter();
   const [, login] = useLoginMutation();
 

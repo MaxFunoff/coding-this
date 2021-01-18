@@ -1,7 +1,7 @@
-import { dedupExchange, Exchange, fetchExchange, ssrExchange, stringifyVariables } from 'urql';
+import { dedupExchange, Exchange, fetchExchange, gql, ssrExchange, stringifyVariables } from 'urql';
 import { pipe, tap } from "wonka";
 import { cacheExchange, Resolver, Cache } from '@urql/exchange-graphcache';
-import { LogoutMutation, CheckMeQuery, CheckMeDocument, LoginMutation, RegisterMutation } from '../generated/graphql';
+import { LogoutMutation, CheckMeQuery, CheckMeDocument, LoginMutation, RegisterMutation, UpvoteMutationVariables } from '../generated/graphql';
 import { betterUpdateQuery } from './betterUpdateQuery';
 import Router from "next/router";
 import { isServer } from "./isServer";
@@ -92,6 +92,36 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
       },
       updates: {
         Mutation: {
+          upvote: (_result, args, cache, info) => {
+            const { postId } = args as UpvoteMutationVariables;
+            const data = cache.readFragment(
+              gql`
+                fragment _ on Post{
+                  id
+                  likes
+                  voteStatus
+                }
+              `,
+              { id: postId } as any
+            );
+            let newLikes = data.likes as number;
+            let voteStatus = 0;
+            if (data.voteStatus) {
+              --newLikes;
+            } else {
+              ++newLikes;
+              voteStatus = 1;
+            }
+            cache.writeFragment(
+              gql`
+                  fragment __ on Post{
+                    likes
+                    voteStatus
+                  }
+                `, 
+                { id: postId, likes: newLikes, voteStatus } as any
+            )
+          },
           createPost: (_result, args, cache, info) => {
             invalidateAllPosts(cache);
           },
@@ -101,7 +131,8 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
               { query: CheckMeDocument },
               _result,
               () => ({ checkMe: null })
-            )
+            );
+            invalidateAllPosts(cache);
           },
           login: (_result, args, cache, info) => {
             betterUpdateQuery<LoginMutation, CheckMeQuery>(
@@ -118,6 +149,8 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                 }
               }
             );
+            invalidateAllPosts(cache);
+
           },
           register: (_result, args, cache, info) => {
             betterUpdateQuery<RegisterMutation, CheckMeQuery>(
@@ -134,6 +167,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                 }
               }
             );
+            invalidateAllPosts(cache);
           },
         },
       },

@@ -1,5 +1,5 @@
 import { MyContext } from 'src/types';
-import { Resolver, Query, Ctx, Arg, Mutation } from 'type-graphql';
+import { Resolver, Query, Ctx, Arg, Mutation, FieldResolver, Root } from 'type-graphql';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
 import { COOKIE_MAME, FORGOT_PASSWORD_PREFIX } from '../constants';
@@ -14,8 +14,16 @@ import { v4 } from 'uuid';
 import { validatePassword } from '../utils/validatePassword';
 import { ResetPasswordEmail } from '../emails/ResetPasswordEmail';
 import { getConnection } from 'typeorm';
-@Resolver()
+@Resolver(User)
 export class UserResolver {
+    @FieldResolver(() => String)
+    email(@Root() user: User, @Ctx() {req}: MyContext){
+        // Checks if user request own user data
+        if(req.session.userId === user.id) return user.email
+
+        // current user is not the same user of the data
+        return ""
+    }
 
     // Check if user logged in
     @Query(() => User, { nullable: true })

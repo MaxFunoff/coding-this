@@ -42,13 +42,14 @@ export type QueryCommentArgs = {
 
 
 export type QueryPostsArgs = {
+  page?: Maybe<Scalars['String']>;
   cursor?: Maybe<Scalars['Int']>;
   limit: Scalars['Int'];
 };
 
 
 export type QueryPostArgs = {
-  id: Scalars['Float'];
+  id: Scalars['Int'];
 };
 
 export type UserComment = {
@@ -76,6 +77,7 @@ export type Post = {
   creator: User;
   likes: Scalars['Float'];
   voteStatus: Scalars['Int'];
+  starStatus: Scalars['Int'];
   createdAt: Scalars['String'];
   updatedAt: Scalars['String'];
   descriptionSnippet: DescriptionSnippet;
@@ -104,6 +106,7 @@ export type Mutation = {
   updatePost?: Maybe<Post>;
   deletePost: Scalars['Boolean'];
   upvote: Scalars['Boolean'];
+  star: Scalars['Boolean'];
   changePassword: UserResponse;
   changePasswordAsUser: UserResponse;
   forgotPassword: Scalars['Boolean'];
@@ -145,6 +148,11 @@ export type MutationDeletePostArgs = {
 
 
 export type MutationUpvoteArgs = {
+  postId: Scalars['Int'];
+};
+
+
+export type MutationStarArgs = {
   postId: Scalars['Int'];
 };
 
@@ -216,7 +224,7 @@ export type EmailPasswordInput = {
 
 export type PostSnippetFragment = (
   { __typename?: 'Post' }
-  & Pick<Post, 'id' | 'title' | 'createdAt' | 'updatedAt' | 'likes' | 'voteStatus' | 'tags'>
+  & Pick<Post, 'id' | 'title' | 'createdAt' | 'updatedAt' | 'likes' | 'voteStatus' | 'starStatus' | 'tags'>
   & { descriptionSnippet: (
     { __typename?: 'descriptionSnippet' }
     & Pick<DescriptionSnippet, 'snippet' | 'hasMore'>
@@ -324,6 +332,16 @@ export type RegisterMutation = (
   ) }
 );
 
+export type StarMutationVariables = Exact<{
+  postId: Scalars['Int'];
+}>;
+
+
+export type StarMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'star'>
+);
+
 export type UpvoteMutationVariables = Exact<{
   postId: Scalars['Int'];
 }>;
@@ -345,9 +363,27 @@ export type CheckMeQuery = (
   )> }
 );
 
+export type PostQueryVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type PostQuery = (
+  { __typename?: 'Query' }
+  & { post?: Maybe<(
+    { __typename?: 'Post' }
+    & Pick<Post, 'id' | 'title' | 'createdAt' | 'updatedAt' | 'likes' | 'tags' | 'description'>
+    & { creator: (
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'displayname'>
+    ) }
+  )> }
+);
+
 export type PostsQueryVariables = Exact<{
   limit: Scalars['Int'];
   cursor?: Maybe<Scalars['Int']>;
+  page?: Maybe<Scalars['String']>;
 }>;
 
 
@@ -371,6 +407,7 @@ export const PostSnippetFragmentDoc = gql`
   updatedAt
   likes
   voteStatus
+  starStatus
   tags
   descriptionSnippet {
     snippet
@@ -479,6 +516,15 @@ export const RegisterDocument = gql`
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
 };
+export const StarDocument = gql`
+    mutation Star($postId: Int!) {
+  star(postId: $postId)
+}
+    `;
+
+export function useStarMutation() {
+  return Urql.useMutation<StarMutation, StarMutationVariables>(StarDocument);
+};
 export const UpvoteDocument = gql`
     mutation Upvote($postId: Int!) {
   upvote(postId: $postId)
@@ -499,9 +545,30 @@ export const CheckMeDocument = gql`
 export function useCheckMeQuery(options: Omit<Urql.UseQueryArgs<CheckMeQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<CheckMeQuery>({ query: CheckMeDocument, ...options });
 };
+export const PostDocument = gql`
+    query Post($id: Int!) {
+  post(id: $id) {
+    id
+    title
+    createdAt
+    updatedAt
+    likes
+    tags
+    description
+    creator {
+      id
+      displayname
+    }
+  }
+}
+    `;
+
+export function usePostQuery(options: Omit<Urql.UseQueryArgs<PostQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<PostQuery>({ query: PostDocument, ...options });
+};
 export const PostsDocument = gql`
-    query Posts($limit: Int!, $cursor: Int) {
-  posts(cursor: $cursor, limit: $limit) {
+    query Posts($limit: Int!, $cursor: Int, $page: String) {
+  posts(cursor: $cursor, limit: $limit, page: $page) {
     posts {
       ...PostSnippet
     }

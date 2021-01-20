@@ -1,10 +1,10 @@
 import { FC } from "react";
 
 interface HeartIconProps {
-    clicked?: boolean
+    active?: boolean
 }
 
-export const HeartIcon: FC<HeartIconProps> = ({clicked = false}) => {
+export const HeartIcon: FC<HeartIconProps> = ({active = false}) => {
   return (
     <div style={{width: '100%'}}>
       <svg
@@ -17,7 +17,7 @@ export const HeartIcon: FC<HeartIconProps> = ({clicked = false}) => {
         enableBackground="0 0 512 512"
       >
         <path
-          fill={clicked ? "#FF757C" : "transparent"}
+          fill={active ? "#FF757C" : "#C8C8C8"}
           d="M365.109,54.603c-44.572,0-84.156,21.337-109.109,54.35c-24.953-33.012-64.538-54.35-109.109-54.35
                 c-75.492,0-136.692,61.199-136.692,136.693c0,95.888,83.741,156.115,129.949,190.633c57.242,42.76,52.644,38.401,115.852,75.467
                 c63.206-37.066,58.609-32.706,115.852-75.467c46.209-34.518,129.949-94.746,129.949-190.633
@@ -25,7 +25,7 @@ export const HeartIcon: FC<HeartIconProps> = ({clicked = false}) => {
         />
 
         <path
-          fill="#1D1D1D"
+         fill="#1D1D1D"
           d="M256,467.595c-1.784,0-3.567-0.467-5.16-1.401c-9.542-5.595-17.538-10.246-24.432-14.256
                     c-39.207-22.805-43.305-25.189-92.364-61.837l-3.208-2.394c-23.647-17.637-56.031-41.793-82.64-73.702
                     C16.216,275.653,0,234.367,0,191.296C0,110.3,65.895,44.405,146.891,44.405c42.168,0,81.27,17.539,109.109,48.529

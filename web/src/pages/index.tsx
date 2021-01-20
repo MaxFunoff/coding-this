@@ -1,16 +1,21 @@
 import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/createUrqlClient";
+import {
+  createUrqlClient,
+  invalidateAllPosts,
+} from "../utils/createUrqlClient";
 import { usePostsQuery } from "../generated/graphql";
 import { Layout } from "../components/Layout";
 import React, { useEffect, useState } from "react";
 import { Box, Stack } from "@chakra-ui/react";
 import { PostCard } from "../components/PostCard";
-import { HeartIcon } from "../components/Icons/HeartIcon";
+import { useRouter } from "next/router";
 
 const Index = () => {
+  const router = useRouter();
   const [variables, setVariables] = useState({
     limit: 10,
     cursor: null as null | number,
+    page: router.query.page || null,
   });
   const [{ data, fetching, stale }] = usePostsQuery({
     variables: {
@@ -35,9 +40,9 @@ const Index = () => {
     };
   }, [data]);
 
-  // useEffect(() => {
-  //   window.scrollTo(0, 0);
-  // }, []);
+  useEffect(() => {
+    setVariables({ ...variables, page: router.query.page || null });
+  }, [router]);
 
   return (
     <Layout>
@@ -46,7 +51,7 @@ const Index = () => {
       ) : (
         <Stack spacing="60px" width="50%" m="auto">
           {data?.posts.posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={`${post.id}&${variables.page}`} post={post} />
           ))}
         </Stack>
       )}

@@ -3,12 +3,13 @@ import { Resolver, Query, Arg, Mutation, Ctx, UseMiddleware, Int, FieldResolver,
 import { PostInput } from '../grql-types/input/PostInput';
 import { MyContext } from '../types';
 import { isAuth } from '../middleware/isAuth';
-import { getConnection, Like } from 'typeorm';
+import { getConnection } from 'typeorm';
 import { descriptionSnippet } from '../grql-types/object/descriptionSnippet';
 import { PaginatedPosts } from '../grql-types/object/PaginatedPosts';
 import { validatePost } from '../utils/validatePost';
 import { PostResponse } from '../grql-types/object/PostResponse'
 import { Upvote } from '../entities/Upvote';
+import { Star } from '../entities/Star';
 
 @Resolver(Post)
 export class PostResolver {
@@ -31,19 +32,20 @@ export class PostResolver {
     async posts(
         @Arg('limit', () => Int) limit: number,
         @Arg('cursor', () => Int, { nullable: true }) cursor: number | null,
+        @Arg('page', () => String, { nullable: true }) page: string | null,
         @Ctx() { req }: MyContext
     ): Promise<PaginatedPosts> {
         const realLimit = Math.min(50, limit);
         const realLimitPlusOne = realLimit + 1;
-
+        const userId = req.session.userId;
         const replacements: any[] = [realLimitPlusOne];
 
-        if(req.session.userId) replacements.push(req.session.userId)
+        if (userId) replacements.push(userId)
         let cursorIdx = 3;
-        if (cursor){
+        if (cursor) {
             replacements.push(cursor)
             cursorIdx = replacements.length
-        } 
+        }
 
         const posts = await getConnection().query(
             `
@@ -52,12 +54,26 @@ export class PostResolver {
             'id', u.id,
             'displayname', u.displayname
             ) creator,
-            ${req.session.userId ?
-                `(SELECT COUNT(*) FROM upvote WHERE "userId" = $2 AND "postId" = p.id) "voteStatus"` :
-                '0 as "voteStatus"'
+            ${userId ?
+                `
+                (SELECT COUNT(*) FROM upvote WHERE "userId" = $2 AND "postId" = p.id) "voteStatus",
+                (SELECT COUNT(*) FROM star WHERE "userId" = $2 AND "postId" = p.id) "starStatus"
+                ` :
+                `
+                0 as "voteStatus",
+                0 as "starStatus"
+                `
             }
         FROM post p
         INNER JOIN public.user u ON u.id = p."creatorId"
+        ${userId && page === 'saved' ?
+                `
+                INNER JOIN public.star s ON s."userId" = $2
+                WHERE p.id = s."postId"
+                ${cursor ? 'AND' : ""}
+            `:
+                ""
+            }
         ${cursor ? `WHERE p.id < $${cursorIdx}` : ""}
         ORDER BY p.id DESC
         LIMIT $1
@@ -70,10 +86,11 @@ export class PostResolver {
 
     // fetch post with id
     @Query(() => Post, { nullable: true })
-    post(
-        @Arg('id') id: number,
+    async post(
+        @Arg('id', () => Int) id: number,
     ): Promise<Post | undefined> {
-        return Post.findOne(id)
+        const post = await Post.findOne(id, { relations: ["creator"] })
+        return post
     }
 
 
@@ -157,6 +174,25 @@ export class PostResolver {
             WHERE id = $2;
             `, [value, postId])
         })
+
+        return true
+    }
+
+    @Mutation(() => Boolean)
+    @UseMiddleware(isAuth)
+    async star(
+        @Arg('postId', () => Int) postId: number,
+        @Ctx() { req }: MyContext
+    ) {
+        const { userId } = req.session;
+        if (!userId) return false;
+        const star = await Star.findOne({ where: { postId, userId } });
+
+        if (star) {
+            Star.delete({ userId, postId })
+        } else {
+            Star.insert({ userId, postId })
+        }
 
         return true
     }

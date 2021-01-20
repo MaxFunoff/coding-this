@@ -5,6 +5,7 @@ fragment PostSnippet on Post {
   updatedAt
   likes
   voteStatus
+  starStatus
   tags
   descriptionSnippet {
     snippet

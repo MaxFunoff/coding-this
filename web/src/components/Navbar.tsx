@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { useCheckMeQuery, useLogoutMutation } from "../generated/graphql";
-import { isServer } from "../utils/isServer";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 
@@ -9,9 +8,11 @@ export const Navbar: FC<{}> = ({}) => {
   const router = useRouter();
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
   const [{ data }] = useCheckMeQuery();
+
+
+  // data is loading
   let side = null;
   let body = null;
-  // data is loading
   if (!data?.checkMe) {
     side = (
       <>
@@ -38,7 +39,7 @@ export const Navbar: FC<{}> = ({}) => {
         <Button
           onClick={async () => {
             await logout();
-            router.push('/')
+            router.push("/");
           }}
           isLoading={logoutFetching}
           color="white"
@@ -55,6 +56,14 @@ export const Navbar: FC<{}> = ({}) => {
         <NextLink href="/create-post" passHref>
           <Link color="white" ml="auto" mr={10}>
             New Post
+          </Link>
+        </NextLink>
+        <NextLink
+          href="/?page=saved"
+          passHref
+        >
+          <Link color="white" ml="auto" mr={10}>
+            Saved Posts
           </Link>
         </NextLink>
       </>

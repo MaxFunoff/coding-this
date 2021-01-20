@@ -1,5 +1,6 @@
 import { Field, Int, ObjectType } from "type-graphql";
 import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Star } from "./Star";
 import { Upvote } from "./Upvote";
 import { User } from "./User";
 import { UserComment } from "./UserComment";
@@ -41,9 +42,15 @@ export class Post extends BaseEntity {
     @Column({ type: "int", default: 0 })
     likes!: number;
 
-    @Field(() => Int)
-    voteStatus: number 
+    @OneToMany(() => Star, star => star.post)
+    stars: Star[];
 
+    @Field(() => Int)
+    voteStatus: number;
+
+    @Field(() => Int)
+    starStatus: number;
+    
     @Field(() => String)
     @CreateDateColumn()
     createdAt: Date;

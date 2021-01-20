@@ -1,23 +1,30 @@
-import { Box, Flex, Heading, Badge, Tag, Text, Button } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  Badge,
+  Tag,
+  Text,
+  Button,
+  Link,
+} from "@chakra-ui/react";
 import React, { FC } from "react";
 import {
-  Post,
   PostSnippetFragment,
+  useStarMutation,
   useUpvoteMutation,
 } from "../generated/graphql";
 import { HeartIcon } from "./Icons/HeartIcon";
-
+import NextLink from "next/link";
+import { StarIcon } from "./Icons/StarIcon";
 interface PostProps {
-  post: PostSnippetFragment;
+  post: PostSnippetFragment | any;
 }
 
 export const PostCard: FC<PostProps> = ({ post }) => {
   const [, upvote] = useUpvoteMutation();
-  const handleClick = () => {
-    upvote({
-      postId: post.id,
-    });
-  };
+  const [, star] = useStarMutation();
+
   return (
     <Box
       key={post.id}
@@ -28,19 +35,41 @@ export const PostCard: FC<PostProps> = ({ post }) => {
     >
       <Box p={5}>
         <Flex>
-          <Heading fontSize="xl">{post.title}</Heading>
-          <Box ml="auto">
-            <Badge
-              textTransform="none"
-              variant="solid"
-              bg="blue.400"
-              fontSize="1rem"
-              color="#fff"
-            >
-              {post.creator.displayname}
-            </Badge>
-          </Box>
+          <Flex direction="column">
+            <Heading fontSize="xl">
+              <NextLink href="/post/[id]" passHref as={`/post/${post.id}`}>
+                <Link>{post.title}</Link>
+              </NextLink>
+            </Heading>
+            <Text fontWeight="600" fontSize="15px" color="#4D4D4D">
+              By{" "}
+              <NextLink
+                href="/user/[id]"
+                passHref
+                as={`/user/${post.creator.id}`}
+              >
+                <Link>{post.creator.displayname}</Link>
+              </NextLink>
+            </Text>
+          </Flex>
+
+          <a
+            onClick={() => {
+              star({
+                postId: post.id,
+              });
+            }}
+            style={{
+              width: "25px",
+              minWidth: "",
+              marginLeft: "auto",
+            }}
+            aria-label="favourite Button"
+          >
+            <StarIcon active={!!post.starStatus} />
+          </a>
         </Flex>
+
         <Text mt={4} whiteSpace="pre-wrap">
           {post.descriptionSnippet.snippet}
         </Text>
@@ -54,19 +83,29 @@ export const PostCard: FC<PostProps> = ({ post }) => {
           ))}
         </Box>
       </Flex>
-      <Flex justifyContent="center" alignItems="center" bg="blue.400" p={2}>
-        <Text fontSize="20px" fontWeight="500" color="#fff" mr={2}>
+      <Flex
+        justifyContent="center"
+        alignItems="center"
+        bg="blue.400"
+        p={2}
+        textAlign="center"
+      >
+        <Text fontWeight="500" color="#fff" mr={1}>
           {post.likes}
         </Text>
         <a
-          onClick={handleClick}
+          onClick={() => {
+            upvote({
+              postId: post.id,
+            });
+          }}
           style={{
             width: "25px",
             minWidth: "",
           }}
           aria-label="Like Button"
         >
-          <HeartIcon clicked={!!post.voteStatus} />
+          <HeartIcon active={!!post.voteStatus} />
         </a>
       </Flex>
     </Box>

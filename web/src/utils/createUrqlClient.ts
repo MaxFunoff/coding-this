@@ -18,9 +18,13 @@ const errorExchange: Exchange = ({ forward }) => (ops$) => {
   );
 };
 
-
+let page: string | undefined | null;
 const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
+    if(page !== info.variables.page){
+      page = info.variables.page as string | undefined | null;
+      invalidateAllPosts(cache)
+    }
     const { parentKey: entityKey, fieldName } = info;
     const allFields = cache.inspectFields(entityKey);
     const fieldInfos = allFields.filter((info) => info.fieldName === fieldName);
@@ -56,7 +60,7 @@ const cursorPagination = (): Resolver => {
 };
 
 
-const invalidateAllPosts = (cache: Cache) => {
+export const invalidateAllPosts = (cache: Cache) => {
   const allFields = cache.inspectFields("Query");
   const fieldInfos = allFields.filter((info) => info.fieldName === "posts");
   fieldInfos.forEach((fi) => {
@@ -118,8 +122,32 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                     likes
                     voteStatus
                   }
-                `, 
-                { id: postId, likes: newLikes, voteStatus } as any
+                `,
+              { id: postId, likes: newLikes, voteStatus } as any
+            )
+          },
+          star: (_result, args, cache, info) => {
+            const { postId } = args as UpvoteMutationVariables;
+            const data = cache.readFragment(
+              gql`
+                fragment _ on Post{
+                  id
+                  starStatus
+                }
+              `,
+              { id: postId } as any
+            );
+            let starStatus = 0;
+            if (!data.starStatus) {
+              starStatus = 1;
+            }
+            cache.writeFragment(
+              gql`
+                  fragment __ on Post{
+                    starStatus
+                  }
+                `,
+              { id: postId, starStatus } as any
             )
           },
           createPost: (_result, args, cache, info) => {

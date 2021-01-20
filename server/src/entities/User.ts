@@ -3,6 +3,7 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 import { Upvote } from "./Upvote";
 import { Post } from "./Post";
 import { UserComment } from "./UserComment";
+import { Star } from "./Star";
 
 @ObjectType()
 @Entity()
@@ -27,6 +28,9 @@ export class User extends BaseEntity {
 
     @OneToMany(() => Upvote, upvote => upvote.user)
     upvotes: Upvote[];
+
+    @OneToMany(() => Star, star => star.user)
+    stars: Star[];
 
     @OneToMany(() => UserComment, userComment => userComment.creator)
     userComments: UserComment[]

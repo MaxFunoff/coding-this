@@ -14,12 +14,13 @@ import { v4 } from 'uuid';
 import { validatePassword } from '../utils/validatePassword';
 import { ResetPasswordEmail } from '../emails/ResetPasswordEmail';
 import { getConnection } from 'typeorm';
+
 @Resolver(User)
 export class UserResolver {
     @FieldResolver(() => String)
-    email(@Root() user: User, @Ctx() {req}: MyContext){
+    email(@Root() user: User, @Ctx() { req }: MyContext) {
         // Checks if user request own user data
-        if(req.session.userId === user.id) return user.email
+        if (req.session.userId === user.id) return user.email
 
         // current user is not the same user of the data
         return ""
@@ -141,7 +142,7 @@ export class UserResolver {
         @Ctx() { redis }: MyContext
     ) {
         const user = await User.findOne({ where: { email } })
-        
+
         // user doesnt exist
         if (!user) return true
 
@@ -168,7 +169,6 @@ export class UserResolver {
         if (errors) return { errors }
 
         const hashedPassword = await argon2.hash(options.password)
-
         let user;
         try {
             const result = await getConnection()

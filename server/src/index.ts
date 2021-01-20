@@ -16,6 +16,7 @@ import { Post } from './entities/Post';
 import { User } from './entities/User';
 import { UserComment } from './entities/UserComment';
 import { Upvote } from './entities/Upvote';
+import { Star } from './entities/Star';
 
 const main = async () => {
     console.time('main')
@@ -28,7 +29,7 @@ const main = async () => {
         logging: true,
         synchronize: true,
         migrations: [path.join(__dirname, "./migrations/*")],
-        entities: [Post, User, UserComment, Upvote]
+        entities: [Post, User, UserComment, Upvote, Star]
     })
 
     // Run Migration

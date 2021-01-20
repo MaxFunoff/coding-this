@@ -47,7 +47,7 @@ const Index = () => {
   return (
     <Layout>
       {!fetching && !data ? (
-        <div>Failed to load posts, try again later</div>
+        <div style={{textAlign: 'center'}}>Failed to load posts, try again later</div>
       ) : (
         <Stack spacing="60px" width="50%" m="auto">
           {data?.posts.posts.map((post) => (

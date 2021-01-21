@@ -61,6 +61,7 @@ export const Navbar: FC<{}> = ({}) => {
         <NextLink
           href="/?page=saved"
           passHref
+          shallow
         >
           <Link color="white" ml="auto" mr={10}>
             Saved Posts

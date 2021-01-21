@@ -1,13 +1,4 @@
-import {
-  Box,
-  Flex,
-  Heading,
-  Badge,
-  Tag,
-  Text,
-  Button,
-  Link,
-} from "@chakra-ui/react";
+import { Box, Flex, Heading, Tag, Text, Link } from "@chakra-ui/react";
 import React, { FC } from "react";
 import {
   PostSnippetFragment,

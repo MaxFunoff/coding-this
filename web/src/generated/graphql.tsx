@@ -16,8 +16,8 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
-  comments: Array<UserComment>;
-  commentsByPost: Array<UserComment>;
+  comments?: Maybe<Array<UserComment>>;
+  commentsByPost?: Maybe<Array<UserComment>>;
   commentsByUser: Array<UserComment>;
   comment: UserComment;
   posts: PaginatedPosts;
@@ -119,13 +119,11 @@ export type Mutation = {
 export type MutationCreateCommentArgs = {
   content: Scalars['String'];
   postId: Scalars['Float'];
-  userId: Scalars['Float'];
 };
 
 
 export type MutationUpdateCommentArgs = {
   content: Scalars['String'];
-  userId: Scalars['Float'];
   id: Scalars['Float'];
 };
 
@@ -372,7 +370,7 @@ export type PostQuery = (
   { __typename?: 'Query' }
   & { post?: Maybe<(
     { __typename?: 'Post' }
-    & Pick<Post, 'id' | 'title' | 'createdAt' | 'updatedAt' | 'likes' | 'tags' | 'description'>
+    & Pick<Post, 'id' | 'title' | 'createdAt' | 'updatedAt' | 'likes' | 'voteStatus' | 'starStatus' | 'tags' | 'description'>
     & { creator: (
       { __typename?: 'User' }
       & Pick<User, 'id' | 'displayname'>
@@ -553,6 +551,8 @@ export const PostDocument = gql`
     createdAt
     updatedAt
     likes
+    voteStatus
+    starStatus
     tags
     description
     creator {

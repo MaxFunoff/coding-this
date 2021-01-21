@@ -1,8 +1,5 @@
 import { withUrqlClient } from "next-urql";
-import {
-  createUrqlClient,
-  invalidateAllPosts,
-} from "../utils/createUrqlClient";
+import { createUrqlClient } from "../utils/createUrqlClient";
 import { usePostsQuery } from "../generated/graphql";
 import { Layout } from "../components/Layout";
 import React, { useEffect, useState } from "react";
@@ -12,10 +9,12 @@ import { useRouter } from "next/router";
 
 const Index = () => {
   const router = useRouter();
+  const _page =
+    typeof router.query.page === "string" ? router.query.page : null;
   const [variables, setVariables] = useState({
     limit: 10,
     cursor: null as null | number,
-    page: router.query.page || null,
+    page: _page,
   });
   const [{ data, fetching, stale }] = usePostsQuery({
     variables: {
@@ -41,13 +40,15 @@ const Index = () => {
   }, [data]);
 
   useEffect(() => {
-    setVariables({ ...variables, page: router.query.page || null });
+    setVariables({ ...variables, page: _page });
   }, [router]);
 
   return (
     <Layout>
       {!fetching && !data ? (
-        <div style={{textAlign: 'center'}}>Failed to load posts, try again later</div>
+        <div style={{ textAlign: "center" }}>
+          Failed to load posts, try again later
+        </div>
       ) : (
         <Stack spacing="60px" width="50%" m="auto">
           {data?.posts.posts.map((post) => (

@@ -5,6 +5,8 @@ query Post($id: Int!) {
     createdAt
     updatedAt
     likes
+    voteStatus
+    starStatus
     tags
     description
     creator {

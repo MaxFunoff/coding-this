@@ -88,9 +88,35 @@ export class PostResolver {
     @Query(() => Post, { nullable: true })
     async post(
         @Arg('id', () => Int) id: number,
+        @Ctx() { req }: MyContext
     ): Promise<Post | undefined> {
-        const post = await Post.findOne(id, { relations: ["creator"] })
-        return post
+        const userId = req.session.userId;
+        const post = await getConnection().query(
+            `
+            SELECT p.*, 
+        json_build_object(
+            'id', u.id,
+            'displayname', u.displayname
+            ) creator,
+            ${userId ?
+                `
+                (SELECT COUNT(*) FROM upvote WHERE "userId" = $2 AND "postId" = p.id) "voteStatus",
+                (SELECT COUNT(*) FROM star WHERE "userId" = $2 AND "postId" = p.id) "starStatus"
+                ` :
+                `
+                0 as "voteStatus",
+                0 as "starStatus"
+                `
+            }
+        FROM post p
+        INNER JOIN public.user u ON u.id = p."creatorId"       
+        WHERE p.id = $1
+        LIMIT 1
+            `,
+            [id, userId]
+        )
+        console.log(post[0])
+        return post[0]
     }
 
 

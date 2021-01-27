@@ -90,7 +90,10 @@ export class PostResolver {
         @Arg('id', () => Int) id: number,
         @Ctx() { req }: MyContext
     ): Promise<Post | undefined> {
+        const replacements = [id]
         const userId = req.session.userId;
+        if(userId) replacements.push(userId)
+        
         const post = await getConnection().query(
             `
             SELECT p.*, 
@@ -113,9 +116,9 @@ export class PostResolver {
         WHERE p.id = $1
         LIMIT 1
             `,
-            [id, userId]
+            replacements
         )
-        console.log(post[0])
+
         return post[0]
     }
 

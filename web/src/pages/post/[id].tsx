@@ -24,7 +24,6 @@ const Post: FC = () => {
   });
   const [{ data: meData }] = useCheckMeQuery();
 
-  console.log(data);
   if (intId === -1) router.push("/");
 
   if (fetching) {

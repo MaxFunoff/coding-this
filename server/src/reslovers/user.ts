@@ -147,14 +147,21 @@ export class UserResolver {
         if (!user) return true
 
         const token = v4();
-        await redis.set(
-            FORGOT_PASSWORD_PREFIX + token,
-            user.id,
-            'ex',
-            1000 * 60 * 60 * 3
-        ); // 3 hours
-
+        
+        try {
+            await redis.set(
+                FORGOT_PASSWORD_PREFIX + token,
+                user.id,
+                'ex',
+                1000 * 60 * 60 * 3
+            ); // 3 hours
+            
+        } catch (error) {
+            console.log(error)
+        }
+       
         sendEmail(email, ResetPasswordEmail(user.displayname, token))
+
         return true
     }
 

@@ -397,6 +397,19 @@ export type PostsQuery = (
   ) }
 );
 
+export type ReadMoreQueryVariables = Exact<{
+  id: Scalars['Int'];
+}>;
+
+
+export type ReadMoreQuery = (
+  { __typename?: 'Query' }
+  & { post?: Maybe<(
+    { __typename?: 'Post' }
+    & Pick<Post, 'description'>
+  )> }
+);
+
 export const PostSnippetFragmentDoc = gql`
     fragment PostSnippet on Post {
   id
@@ -579,4 +592,15 @@ export const PostsDocument = gql`
 
 export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });
+};
+export const ReadMoreDocument = gql`
+    query ReadMore($id: Int!) {
+  post(id: $id) {
+    description
+  }
+}
+    `;
+
+export function useReadMoreQuery(options: Omit<Urql.UseQueryArgs<ReadMoreQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<ReadMoreQuery>({ query: ReadMoreDocument, ...options });
 };

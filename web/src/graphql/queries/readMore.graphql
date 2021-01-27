@@ -1,0 +1,5 @@
+query ReadMore($id: Int!) {
+  post(id: $id) {
+    description
+  }
+}

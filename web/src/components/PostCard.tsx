@@ -2,6 +2,7 @@ import { Box, Flex, Heading, Tag, Text, Link } from "@chakra-ui/react";
 import React, { FC } from "react";
 import {
   PostSnippetFragment,
+  useReadMoreQuery,
   useStarMutation,
   useUpvoteMutation,
 } from "../generated/graphql";
@@ -15,6 +16,12 @@ interface PostProps {
 export const PostCard: FC<PostProps> = ({ post }) => {
   const [, upvote] = useUpvoteMutation();
   const [, star] = useStarMutation();
+  const [{ data }, readMore] = useReadMoreQuery({
+    pause: true,
+    variables:{
+      id: post.id
+    }
+  });
 
   return (
     <Box
@@ -39,7 +46,7 @@ export const PostCard: FC<PostProps> = ({ post }) => {
                 passHref
                 as={`/user/${post.creator.id}`}
               >
-                <Link>{post.creator.displayname}</Link>
+                <Link color="#0000EE">{post.creator.displayname}</Link>
               </NextLink>
             </Text>
           </Flex>
@@ -52,7 +59,6 @@ export const PostCard: FC<PostProps> = ({ post }) => {
             }}
             style={{
               width: "25px",
-              minWidth: "",
               marginLeft: "auto",
             }}
             aria-label="favourite Button"
@@ -61,9 +67,20 @@ export const PostCard: FC<PostProps> = ({ post }) => {
           </a>
         </Flex>
 
-        <Text mt={4} whiteSpace="pre-wrap">
-          {post.descriptionSnippet.snippet}
-        </Text>
+        <Box mt={4}>
+          <Text whiteSpace="pre-wrap">
+            {data?.post?.description || post.descriptionSnippet.snippet}
+            {post.descriptionSnippet.hasMore && !data?.post?.description && (
+              <Link
+                color="#0000EE"
+                ml={2}
+                onClick={() => readMore({ id: post.id })}
+              >
+                Read More
+              </Link>
+            )}
+          </Text>
+        </Box>
       </Box>
       <Flex p={1}>
         <Box ml="auto">

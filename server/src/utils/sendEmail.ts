@@ -13,19 +13,25 @@ export async function sendEmail(to: string, html: string) {
         port: 587,
         secure: false, // true for 465, false for other ports
         auth: {
-            user: 'whdwi6rvjtjbg2ub@ethereal.email', // generated ethereal user
-            pass: 'fDVpNtJrPbjYM9fgA3', // generated ethereal password
+            user: 'mc2kd4vnflyowfl6@ethereal.email', // generated ethereal user
+            pass: 'N48bDKD8WTqCrvHWAd', // generated ethereal password
         },
     });
 
     // send mail with defined transport object
-    let info = await transporter.sendMail({
-        from: '"PlaceHolder Support"<doNotReply@placeholder.com>', // sender address
-        to, // list of receivers
-        subject: "Change Password", // Subject line
-        html,
-    });
+    let info;
+    try {
+        info = await transporter.sendMail({
+            from: '"PlaceHolder Support"<doNotReply@placeholder.com>', // sender address
+            to, // list of receivers
+            subject: "Change Password", // Subject line
+            html,
+        });
+    } catch (error) {
+        console.log(error)
+    }
 
-    console.log("Message sent: %s", info.messageId);
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    console.log(info)
+    // console.log("Message sent: %s", info.messageId);
+    // console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 }

@@ -1,22 +1,25 @@
+import { Box, Flex, Stack } from "@chakra-ui/react";
 import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/createUrqlClient";
-import { usePostsQuery } from "../generated/graphql";
-import { Layout } from "../components/Layout";
-import React, { useEffect, useState } from "react";
-import { Box, Stack } from "@chakra-ui/react";
-import { PostCard } from "../components/PostCard";
 import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import { FilterNav } from "../components/FilterNav/FilterNav";
+import { Layout } from "../components/Layout";
+import { PostCard } from "../components/PostCard/PostCard";
+import { usePostsQuery } from "../generated/graphql";
+import { createUrqlClient } from "../utils/createUrqlClient";
 
 const Index = () => {
   const router = useRouter();
-  const _page =
-    typeof router.query.page === "string" ? router.query.page : null;
+
   const [variables, setVariables] = useState({
     limit: 10,
     cursor: null as null | number,
-    page: _page,
+    page: router.query.page as null | string,
+    orderby: router.query.orderby as null | string,
+    cursorlike: null as null | number
   });
-  const [{ data, fetching, stale }] = usePostsQuery({
+
+  const [{ data, fetching, stale }, fetchPost] = usePostsQuery({
     variables: {
       ...variables,
     },
@@ -25,9 +28,13 @@ const Index = () => {
   const handleScroll = () => {
     if (!data?.posts.hasMore) return;
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+      const _variables = {...variables}
+      _variables.cursor = data.posts.posts[data.posts.posts.length - 1].id
+      if(router.query.sortby === 'rising'){
+        _variables.cursorlike = data.posts.posts[data.posts.posts.length - 1].likes
+      }
       setVariables({
-        ...variables,
-        cursor: data.posts.posts[data.posts.posts.length - 1].id,
+        ..._variables,
       });
     }
   };
@@ -40,7 +47,7 @@ const Index = () => {
   }, [data]);
 
   useEffect(() => {
-    setVariables({ ...variables, page: _page });
+      setVariables({...variables, cursor: null, cursorlike: null, page: router.query.page as null | string, orderby: router.query.orderby as null | string})
   }, [router]);
 
   return (
@@ -50,15 +57,20 @@ const Index = () => {
           Failed to load posts, try again later
         </div>
       ) : (
-        <Stack spacing="60px" width="50%" m="auto">
-          {data?.posts.posts.map((post) => (
-            <PostCard key={`${post.id}&${variables.page}`} post={post} />
-          ))}
-        </Stack>
+        <>
+          <Flex justifyContent="center" mb={4}>
+            <FilterNav />
+          </Flex>
+          <Stack spacing="60px" width="50%" m="auto">
+            {data?.posts.posts.map((post) => (
+              <PostCard key={`${post.id}`} post={post} />
+            ))}
+          </Stack>
+          <Box mt={2} p={4} textAlign="center" fontSize="xl">
+            {stale && "Loading..."}
+          </Box>
+        </>
       )}
-      <Box mt={2} p={4} textAlign="center" fontSize="xl">
-        {stale && "Loading..."}
-      </Box>
     </Layout>
   );
 };

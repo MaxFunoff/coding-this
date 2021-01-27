@@ -42,6 +42,8 @@ export type QueryCommentArgs = {
 
 
 export type QueryPostsArgs = {
+  cursorlike?: Maybe<Scalars['Int']>;
+  orderby?: Maybe<Scalars['String']>;
   page?: Maybe<Scalars['String']>;
   cursor?: Maybe<Scalars['Int']>;
   limit: Scalars['Int'];
@@ -381,7 +383,9 @@ export type PostQuery = (
 export type PostsQueryVariables = Exact<{
   limit: Scalars['Int'];
   cursor?: Maybe<Scalars['Int']>;
+  cursorlike?: Maybe<Scalars['Int']>;
   page?: Maybe<Scalars['String']>;
+  orderby?: Maybe<Scalars['String']>;
 }>;
 
 
@@ -580,8 +584,14 @@ export function usePostQuery(options: Omit<Urql.UseQueryArgs<PostQueryVariables>
   return Urql.useQuery<PostQuery>({ query: PostDocument, ...options });
 };
 export const PostsDocument = gql`
-    query Posts($limit: Int!, $cursor: Int, $page: String) {
-  posts(cursor: $cursor, limit: $limit, page: $page) {
+    query Posts($limit: Int!, $cursor: Int, $cursorlike: Int, $page: String, $orderby: String) {
+  posts(
+    cursor: $cursor
+    limit: $limit
+    page: $page
+    orderby: $orderby
+    cursorlike: $cursorlike
+  ) {
     posts {
       ...PostSnippet
     }

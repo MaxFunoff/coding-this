@@ -5,10 +5,12 @@ import {
   useReadMoreQuery,
   useStarMutation,
   useUpvoteMutation,
-} from "../generated/graphql";
-import { HeartIcon } from "./Icons/HeartIcon";
+} from "../../generated/graphql";
+import { HeartIcon } from "../Icons/HeartIcon";
 import NextLink from "next/link";
-import { StarIcon } from "./Icons/StarIcon";
+import { StarIcon } from "../Icons/StarIcon";
+import styles from "./PostCard.module.scss";
+
 interface PostProps {
   post: PostSnippetFragment | any;
 }
@@ -18,9 +20,9 @@ export const PostCard: FC<PostProps> = ({ post }) => {
   const [, star] = useStarMutation();
   const [{ data }, readMore] = useReadMoreQuery({
     pause: true,
-    variables:{
-      id: post.id
-    }
+    variables: {
+      id: post.id,
+    },
   });
 
   return (
@@ -52,6 +54,7 @@ export const PostCard: FC<PostProps> = ({ post }) => {
           </Flex>
 
           <a
+            className={styles.iconBtn}
             onClick={() => {
               star({
                 postId: post.id,
@@ -102,6 +105,7 @@ export const PostCard: FC<PostProps> = ({ post }) => {
           {post.likes}
         </Text>
         <a
+          className={styles.iconBtn}
           onClick={() => {
             upvote({
               postId: post.id,

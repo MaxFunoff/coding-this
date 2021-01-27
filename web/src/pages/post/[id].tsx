@@ -11,6 +11,7 @@ import { Form, Formik } from "formik";
 import { HeartIcon } from "../../components/Icons/HeartIcon";
 import { StarIcon } from "../../components/Icons/StarIcon";
 
+
 const Post: FC = () => {
   const router = useRouter();
   const intId =

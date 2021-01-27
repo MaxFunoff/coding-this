@@ -1,0 +1,29 @@
+.tabWrapper {
+  display: flex;
+  max-width: 350px;
+  .tab {
+    padding: 5px 20px;
+    font-size: 20px;
+    border: 1px #dbdbdb solid;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #b5b5b5;
+    }
+
+    &:first-child {
+      border-bottom-left-radius: 9999px;
+      border-top-left-radius: 9999px;
+    }
+    &:last-child {
+      border-bottom-right-radius: 9999px;
+      border-top-right-radius: 9999px;
+    }
+
+    &.active{
+        background-color: #4299e1;
+        color: #fff;
+        border-color: #85b2d6;
+    }
+  }
+}

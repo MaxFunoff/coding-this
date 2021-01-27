@@ -18,13 +18,19 @@ const errorExchange: Exchange = ({ forward }) => (ops$) => {
   );
 };
 
-let page: string | undefined | null;
+const invalidateAllPosts = (cache: Cache) => {
+  const allFields = cache.inspectFields("Query");
+  const fieldInfos = allFields.filter((info) => info.fieldName === "posts");
+  fieldInfos.forEach((fi) => {
+    cache.invalidate("Query", "posts", fi.arguments || {});
+  });
+}
+
+
+let page: any;
+let orderby: any;
 const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
-    if(page !== info.variables.page){
-      page = info.variables.page as string | undefined | null;
-      invalidateAllPosts(cache)
-    }
     const { parentKey: entityKey, fieldName } = info;
     const allFields = cache.inspectFields(entityKey);
     const fieldInfos = allFields.filter((info) => info.fieldName === fieldName);
@@ -32,7 +38,6 @@ const cursorPagination = (): Resolver => {
     if (size === 0) {
       return undefined;
     }
-
     const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`;
     const isItInTheCache = cache.resolve(
       cache.resolve(entityKey, fieldKey) as string,
@@ -41,15 +46,36 @@ const cursorPagination = (): Resolver => {
     info.partial = !isItInTheCache;
     let hasMore = true;
     const results: string[] = [];
-    fieldInfos.forEach((fi) => {
-      const key = cache.resolve(entityKey, fi.fieldKey) as string;
+    console.log(_parent)
+    console.log(fieldInfos[fieldInfos.length - 1])
+    if (
+      fieldInfos[fieldInfos.length - 1]?.arguments?.page !== page
+      || fieldInfos[fieldInfos.length - 1]?.arguments?.orderby !== orderby
+    ) {
+      page = fieldInfos[fieldInfos.length - 1]?.arguments?.page;
+      orderby = fieldInfos[fieldInfos.length - 1]?.arguments?.orderby;
+      const key = cache.resolve(entityKey, fieldInfos[fieldInfos.length - 1].fieldKey) as string;
       const data = cache.resolve(key, "posts") as string[];
       const _hasMore = cache.resolve(key, "hasMore");
       if (!_hasMore) {
         hasMore = _hasMore as boolean;
       }
       results.push(...data);
-    });
+      for (let i = 0; i < fieldInfos.length - 1; i++) {
+        cache.invalidate("Query", "posts", fieldInfos[i].arguments || {});
+      }
+    } else {
+      fieldInfos.forEach((fi) => {
+        const key = cache.resolve(entityKey, fi.fieldKey) as string;
+        const data = cache.resolve(key, "posts") as string[];
+        const _hasMore = cache.resolve(key, "hasMore");
+        if (!_hasMore) {
+          hasMore = _hasMore as boolean;
+        }
+        results.push(...data);
+      });
+    }
+
 
     return {
       __typename: "PaginatedPosts",
@@ -60,13 +86,6 @@ const cursorPagination = (): Resolver => {
 };
 
 
-export const invalidateAllPosts = (cache: Cache) => {
-  const allFields = cache.inspectFields("Query");
-  const fieldInfos = allFields.filter((info) => info.fieldName === "posts");
-  fieldInfos.forEach((fi) => {
-    cache.invalidate("Query", "posts", fi.arguments || {});
-  });
-}
 
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = "";

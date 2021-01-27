@@ -33,53 +33,54 @@ export class PostResolver {
         @Arg('limit', () => Int) limit: number,
         @Arg('cursor', () => Int, { nullable: true }) cursor: number | null,
         @Arg('page', () => String, { nullable: true }) page: string | null,
+        @Arg('orderby', () => String, { nullable: true }) orderby: string | null,
+        @Arg('cursorlike', () => Int, { nullable: true }) cursorlike: number | null,
         @Ctx() { req }: MyContext
     ): Promise<PaginatedPosts> {
         const realLimit = Math.min(50, limit);
         const realLimitPlusOne = realLimit + 1;
         const userId = req.session.userId;
         const replacements: any[] = [realLimitPlusOne];
-
         if (userId) replacements.push(userId)
         let cursorIdx = 3;
         if (cursor) {
             replacements.push(cursor)
             cursorIdx = replacements.length
+            if (orderby) {
+                replacements.push(cursorlike === null ? 0 : cursorlike)
+            }
         }
+
 
         const posts = await getConnection().query(
             `
-        SELECT p.*, 
-        json_build_object(
-            'id', u.id,
-            'displayname', u.displayname
-            ) creator,
-            ${userId ?
-                `
-                (SELECT COUNT(*) FROM upvote WHERE "userId" = $2 AND "postId" = p.id) "voteStatus",
-                (SELECT COUNT(*) FROM star WHERE "userId" = $2 AND "postId" = p.id) "starStatus"
-                ` :
-                `
-                0 as "voteStatus",
-                0 as "starStatus"
-                `
-            }
-        FROM post p
-        INNER JOIN public.user u ON u.id = p."creatorId"
-        ${userId && page === 'saved' ?
-                `
-                INNER JOIN public.star s ON s."userId" = $2
-                WHERE p.id = s."postId"
-                ${cursor ? 'AND' : ""}
-            `:
-                ""
-            }
-        ${cursor ? `WHERE p.id < $${cursorIdx}` : ""}
-        ORDER BY p.id DESC
-        LIMIT $1
-        `,
+                SELECT p.*, 
+                json_build_object(
+                    'id', u.id,
+                    'displayname', u.displayname
+                    ) creator,
+                    ${userId ? `
+                            (SELECT COUNT(*) FROM upvote WHERE "userId" = $2 AND "postId" = p.id) "voteStatus",
+                            (SELECT COUNT(*) FROM star WHERE "userId" = $2 AND "postId" = p.id) "starStatus"
+                        ` : `
+                            0 as "voteStatus",
+                            0 as "starStatus"
+                        `}
+                FROM post p
+                INNER JOIN public.user u ON u.id = p."creatorId"
+                ${userId && page === 'saved' ? `
+                        INNER JOIN public.star s ON s."userId" = $2
+                        WHERE p.id = s."postId" 
+                        ${cursor ? orderby === 'rising' ? `AND p.likes <= $4 AND p.id < $${cursorIdx}` : ` AND p.id < $${cursorIdx}` : ""}
+                    `:
+                cursor ? orderby === 'rising' ? `WHERE p.likes <= $4 AND p.id < $${cursorIdx}` : `WHERE p.id < $${cursorIdx}` : ""}
+                
+                ORDER BY ${orderby === 'rising' ? 'p.likes DESC,' : ''} p.id DESC
+                LIMIT $1
+            `,
             replacements
         )
+
 
         return { posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne };
     }
@@ -92,8 +93,8 @@ export class PostResolver {
     ): Promise<Post | undefined> {
         const replacements = [id]
         const userId = req.session.userId;
-        if(userId) replacements.push(userId)
-        
+        if (userId) replacements.push(userId)
+
         const post = await getConnection().query(
             `
             SELECT p.*, 

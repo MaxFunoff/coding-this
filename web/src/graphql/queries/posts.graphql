@@ -1,5 +1,5 @@
-query Posts($limit: Int!, $cursor: Int, $page: String) {
-  posts(cursor: $cursor, limit: $limit, page: $page) {
+query Posts($limit: Int!, $cursor: Int, $cursorlike: Int, $page: String, $orderby: String) {
+  posts(cursor: $cursor, limit: $limit, page: $page, orderby: $orderby, cursorlike: $cursorlike) {
     posts {
       ...PostSnippet
     }

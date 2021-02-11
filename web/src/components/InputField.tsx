@@ -12,12 +12,14 @@ type InputFieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   name: string;
   textarea?: boolean;
+  required?: boolean;
 };
 
 export const InputField: FC<InputFieldProps> = ({
   label,
   size,
   textarea,
+  required,
   ...props
 }) => {
   const [field, { error }] = useField(props);
@@ -28,7 +30,7 @@ export const InputField: FC<InputFieldProps> = ({
   return (
     <FormControl isInvalid={!!error}>
       <FormLabel htmlFor={field.name}>
-        {props.required && <span style={{ color: "red" }}>*</span>}{" "}
+        {required && <span style={{ color: "red" }}>*</span>}{" "}
         {/*Place holder until u put css u fuck*/}
         {label}
       </FormLabel>

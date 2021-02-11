@@ -10,16 +10,15 @@ import { createUrqlClient } from "../utils/createUrqlClient";
 
 const Index = () => {
   const router = useRouter();
-
   const [variables, setVariables] = useState({
     limit: 10,
     cursor: null as null | number,
     page: router.query.page as null | string,
     orderby: router.query.orderby as null | string,
-    cursorlike: null as null | number
+    cursorlike: null as null | number,
   });
 
-  const [{ data, fetching, stale }, fetchPost] = usePostsQuery({
+  const [{ data, fetching, stale }] = usePostsQuery({
     variables: {
       ...variables,
     },
@@ -28,10 +27,11 @@ const Index = () => {
   const handleScroll = () => {
     if (!data?.posts.hasMore) return;
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-      const _variables = {...variables}
-      _variables.cursor = data.posts.posts[data.posts.posts.length - 1].id
-      if(router.query.sortby === 'rising'){
-        _variables.cursorlike = data.posts.posts[data.posts.posts.length - 1].likes
+      const _variables = { ...variables };
+      _variables.cursor = data.posts.posts[data.posts.posts.length - 1].id;
+      if (router.query.sortby === "rising") {
+        _variables.cursorlike =
+          data.posts.posts[data.posts.posts.length - 1].likes;
       }
       setVariables({
         ..._variables,
@@ -47,7 +47,13 @@ const Index = () => {
   }, [data]);
 
   useEffect(() => {
-      setVariables({...variables, cursor: null, cursorlike: null, page: router.query.page as null | string, orderby: router.query.orderby as null | string})
+    setVariables({
+      ...variables,
+      cursor: null,
+      cursorlike: null,
+      page: router.query.page as null | string,
+      orderby: router.query.orderby as null | string,
+    });
   }, [router]);
 
   return (

@@ -1,3 +1,15 @@
-.iconBtn:hover{
-    cursor: pointer;
+.iconBtn{
+    width: 33.33333%;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color .1s ease;
+    .iconLabel{
+        color: #606770;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+    &:hover{
+        background-color: #dde4ee;
+    }
 }

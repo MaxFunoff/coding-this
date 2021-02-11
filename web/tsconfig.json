@@ -21,9 +21,15 @@
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "src/components/ExampleForScrubz.jsx"
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "rules": {
+    "react/jsx-uses-react": "off",
+    "react/jsx-uses-vars": "off",
+    "react/react-in-jsx-scope": "off"
+  }
 }

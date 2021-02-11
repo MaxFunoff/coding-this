@@ -46,12 +46,13 @@ const cursorPagination = (): Resolver => {
     info.partial = !isItInTheCache;
     let hasMore = true;
     const results: string[] = [];
-    console.log(_parent)
-    console.log(fieldInfos[fieldInfos.length - 1])
+
+    // Check if page changed
     if (
       fieldInfos[fieldInfos.length - 1]?.arguments?.page !== page
       || fieldInfos[fieldInfos.length - 1]?.arguments?.orderby !== orderby
     ) {
+      // If it did insert the newest data
       page = fieldInfos[fieldInfos.length - 1]?.arguments?.page;
       orderby = fieldInfos[fieldInfos.length - 1]?.arguments?.orderby;
       const key = cache.resolve(entityKey, fieldInfos[fieldInfos.length - 1].fieldKey) as string;
@@ -61,10 +62,13 @@ const cursorPagination = (): Resolver => {
         hasMore = _hasMore as boolean;
       }
       results.push(...data);
+
+      // Loops through the cache and invalidates all the previous cache
       for (let i = 0; i < fieldInfos.length - 1; i++) {
         cache.invalidate("Query", "posts", fieldInfos[i].arguments || {});
       }
     } else {
+      // Else add the new data to the existing data
       fieldInfos.forEach((fi) => {
         const key = cache.resolve(entityKey, fi.fieldKey) as string;
         const data = cache.resolve(key, "posts") as string[];

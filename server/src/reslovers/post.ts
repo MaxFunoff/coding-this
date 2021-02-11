@@ -3,7 +3,7 @@ import { Resolver, Query, Arg, Mutation, Ctx, UseMiddleware, Int, FieldResolver,
 import { PostInput } from '../grql-types/input/PostInput';
 import { MyContext } from '../types';
 import { isAuth } from '../middleware/isAuth';
-import { getConnection } from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import { descriptionSnippet } from '../grql-types/object/descriptionSnippet';
 import { PaginatedPosts } from '../grql-types/object/PaginatedPosts';
 import { validatePost } from '../utils/validatePost';
@@ -41,6 +41,7 @@ export class PostResolver {
         const realLimitPlusOne = realLimit + 1;
         const userId = req.session.userId;
         const replacements: any[] = [realLimitPlusOne];
+
         if (userId) replacements.push(userId)
         let cursorIdx = 3;
         if (cursor) {
@@ -50,6 +51,9 @@ export class PostResolver {
                 replacements.push(cursorlike === null ? 0 : cursorlike)
             }
         }
+        // const query = generateTemplate(limit, userId, cursor, cursorlike, page, orderby)
+
+
 
 
         const posts = await getConnection().query(
